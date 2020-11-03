@@ -6,7 +6,7 @@
 # Ultima versao: Qua 15 Jul 2020 19:43:03 -03
 #
 # Compilador padrao
-CC=gcc-10
+CC=gcc
 # 
 # Parametro para compilacao OpenMP
 LIB=-fopenmp

@@ -3,70 +3,91 @@
 #include <stdlib.h>
 #include <string.h>
 
+int printMatrix(int rows, int cols, float *a);
+int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
+
 int y;
 int w;
 int v;
 
 int main(int argc, char *argv[])
 {
-    // pega variaveis do argv
-    y = atoi(argv[1]);
-    w = atoi(argv[2]);
-    v = atoi(argv[3]);
-    char arqA[10];
-    char arqB[10];
-    char arqC[10];
-    char arqD[10];
-    strcpy(arqA, argv[4]);
-    strcpy(arqB, argv[5]);
-    strcpy(arqC, argv[6]);
-    strcpy(arqD, argv[7]);
+  // pega variaveis do argv
+  y = atoi(argv[1]);
+  w = atoi(argv[2]);
+  v = atoi(argv[3]);
+  char arqA[10];
+  char arqB[10];
+  char arqC[10];
+  char arqD[10];
+  strcpy(arqA, argv[4]);
+  strcpy(arqB, argv[5]);
+  strcpy(arqC, argv[6]);
+  strcpy(arqD, argv[7]);
 
-    float *matrizA = (float *)malloc(y * w * sizeof(float));
-    float *matrizB = (float *)malloc(w * v * sizeof(float));
-    float *matrizC = (float *)malloc(v * 1 * sizeof(float));
-    float *matrizD = (float *)malloc(y * 1 * sizeof(float));
+  float *matrizA = (float *)malloc(y * w * sizeof(float));
+  float *matrizB = (float *)malloc(w * v * sizeof(float));
+  float *matrizC = (float *)malloc(v * 1 * sizeof(float));
+  float *matrizD = (float *)malloc(y * 1 * sizeof(float));
 
-    readFile(arqC);
+  readmatrix(y, w, matrizA, arqA);
+  readmatrix(w, v, matrizB, arqB);
+  readmatrix(v, 1, matrizC, arqC);
+
+
+  printf("%s\n\n",arqA);
+  printMatrix(y, w, matrizA);
+  printf("%s\n\n",arqB);
+  printMatrix(w, v, matrizB);
+  printf("%s\n\n",arqC);
+  printMatrix(v, 1, matrizC);
 
 // Inicio de uma regiao paralela
 #pragma omp parallel
-    {
-        printf("Ola mundo... do thread = %d\n",
-               omp_get_thread_num());
-    }
-    // Fim da regiao paralela
+  {
+    printf("Ola mundo... do thread = %d\n",
+           omp_get_thread_num());
+  }
+  // Fim da regiao paralela
 }
 
-int readFile(const char *filename)
+int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
 {
-    char c[1000];
-    FILE *fptr;
-    if ((fptr = fopen(filename, "r")) == NULL)
-    {
-        printf("Error! opening file");
-        // Program exits if file pointer returns NULL.
-        exit(1);
-    }
+  // printf("\nentrou\n");
 
-    // reads text until newline is encountered
-    fscanf(fptr, "%[^\n]", c);
-    printf("Data from the file:\n%s", c);
-    fclose(fptr);
-
+  FILE *pf;
+  pf = fopen(filename, "r");
+  if (pf == NULL)
     return 0;
+
+  register unsigned int i, j;
+  char k[15];
+
+  for (i = 0; i < rows; ++i)
+  {
+    for (j = 0; j < cols; ++j)
+    {
+      fscanf(pf, "%s", k);
+      // printf("%s\t", k);
+      a[i * cols + j] = strtof (k, NULL);
+    }
+  }
+  // printf("\npassou\n");
+  fclose(pf);
+  return 1;
 }
 
-int printMatrix(int rows, int cols, float **a)
+int printMatrix(int rows, int cols, float *a)
 {
-    int row, columns;
-    for (row = 0; row < rows; row++)
+  register unsigned int i, j;
+
+  for (i = 0; i < rows; i++)
+  {
+    for (j = 0; j < cols; j++)
     {
-        for (columns = 0; columns < cols; columns++)
-        {
-            printf("%f     ", a[row][columns]);
-        }
-        printf("\n");
+      printf("%.2f\t", a[i * cols + j]);
     }
-    return 1;
+    printf("\n");
+  }
+  return 1;
 }
