@@ -25,30 +25,76 @@ int main(int argc, char *argv[])
   strcpy(arqC, argv[6]);
   strcpy(arqD, argv[7]);
 
+  // cria matrizes
+
   float *matrizA = (float *)malloc(y * w * sizeof(float));
   float *matrizB = (float *)malloc(w * v * sizeof(float));
   float *matrizC = (float *)malloc(v * 1 * sizeof(float));
   float *matrizD = (float *)malloc(y * 1 * sizeof(float));
+  float *aux = (float *)malloc(y * v * sizeof(float));
+
+  // pegar dados nos arquivos
 
   readmatrix(y, w, matrizA, arqA);
   readmatrix(w, v, matrizB, arqB);
   readmatrix(v, 1, matrizC, arqC);
 
+  // teste pra ver os dados
 
-  printf("%s\n\n",arqA);
-  printMatrix(y, w, matrizA);
-  printf("%s\n\n",arqB);
-  printMatrix(w, v, matrizB);
-  printf("%s\n\n",arqC);
-  printMatrix(v, 1, matrizC);
+  // printf("%s\n\n", arqA);
+  // printMatrix(y, w, matrizA);
+  // printf("%s\n\n", arqB);
+  // printMatrix(w, v, matrizB);
+  // printf("%s\n\n", arqC);
+  // printMatrix(v, 1, matrizC);
 
-// Inicio de uma regiao paralela
-#pragma omp parallel
+  // inicio multiplicacao
+
+  int i;
+  int j;
+  int k;
+
+  // Inicio de uma regiao paralela
+
+#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
   {
-    printf("Ola mundo... do thread = %d\n",
-           omp_get_thread_num());
+
+    // A*B = aux
+
+#pragma omp for
+    for (i = 0; i < y; i++)
+    {
+      for (j = 0; j < v; j++)
+      {
+        aux[i * v + j] = 0.0;
+        for (k = 0; k < v; k++)
+        {
+          aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+        }
+      }
+    }
+
+    // printf("%s\n\n", "aux");
+    // printMatrix(w, w, aux);
+
+    // aux*C = D
+#pragma omp for
+    for (i = 0; i < v; i++)
+    {
+      for (j = 0; j < 1; j++)
+      {
+        matrizD[i * 1 + j] = 0.0;
+        for (k = 0; k < 1; k++)
+        {
+          matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+        }
+      }
+    }
   }
   // Fim da regiao paralela
+
+  printf("%s\n\n", arqD);
+  printMatrix(y, 1, matrizD);
 }
 
 int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
@@ -69,7 +115,7 @@ int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filen
     {
       fscanf(pf, "%s", k);
       // printf("%s\t", k);
-      a[i * cols + j] = strtof (k, NULL);
+      a[i * cols + j] = strtof(k, NULL);
     }
   }
   // printf("\npassou\n");
