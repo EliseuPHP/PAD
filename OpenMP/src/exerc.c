@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
 
 	gettimeofday(&start, NULL);
 
-// #pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
-//   {
+#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
+  {
 
     // A*B = aux
 
-// #pragma omp for
+#pragma omp for
     for (i = 0; i < y; i++)
     {
       for (j = 0; j < v; j++)
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     }
 
     // aux*C = D
-// #pragma omp for
+#pragma omp for
     for (i = 0; i < v; i++)
     {
       for (j = 0; j < 1; j++)
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         }
       }
     }
-  // }
+  }
 // Fim da regiao paralela
 
 // Soma
