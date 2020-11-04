@@ -91,15 +91,16 @@ int main(int argc, char *argv[])
       }
     }
 
-#pragma omp for
-    for (i = 0; i < y; i++)
+    
+  }
+
+  for (i = 0; i < y; i++)
     {
       for (j = 0; j < 1; j++)
       {
         soma += matrizD[i * 1 + j];
       }
     }
-  }
   // Fim da regiao paralela
   writeMatrix(y, 1, matrizD, arqD);
   printf("%.2f", soma);
