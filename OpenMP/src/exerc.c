@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
@@ -57,9 +58,13 @@ int main(int argc, char *argv[])
 
   float soma = 0.0;
 
+  double time_spent = 0.0;
+
   // Inicio de uma regiao paralela
 
-#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v, soma) private(i, j, k)
+  clock_t begin = clock();
+
+#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
   {
 
     // A*B = aux
@@ -90,18 +95,24 @@ int main(int argc, char *argv[])
         }
       }
     }
+  }
+// Fim da regiao paralela
 
-    
+// Soma
+#pragma omp parallel for reduction(+ \
+                                   : soma)
+  for (i = 0; i < y; i++)
+  {
+    for (j = 0; j < 1; j++)
+    {
+      soma += matrizD[i * 1 + j];
+    }
   }
 
-  for (i = 0; i < y; i++)
-    {
-      for (j = 0; j < 1; j++)
-      {
-        soma += matrizD[i * 1 + j];
-      }
-    }
-  // Fim da regiao paralela
+  clock_t end = clock();
+  time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+  printf("Time elpased is %f seconds\n", time_spent);
   writeMatrix(y, 1, matrizD, arqD);
   printf("%.2f", soma);
 }
