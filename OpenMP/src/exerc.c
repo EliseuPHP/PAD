@@ -4,7 +4,8 @@
 #include <string.h>
 
 int printMatrix(int rows, int cols, float *a);
-int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
+int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
+int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
 
 int y;
 int w;
@@ -35,9 +36,9 @@ int main(int argc, char *argv[])
 
   // pegar dados nos arquivos
 
-  readmatrix(y, w, matrizA, arqA);
-  readmatrix(w, v, matrizB, arqB);
-  readmatrix(v, 1, matrizC, arqC);
+  readMatrix(y, w, matrizA, arqA);
+  readMatrix(w, v, matrizB, arqB);
+  readMatrix(v, 1, matrizC, arqC);
 
   // teste pra ver os dados
 
@@ -54,9 +55,11 @@ int main(int argc, char *argv[])
   int j;
   int k;
 
+  float soma = 0.0;
+
   // Inicio de uma regiao paralela
 
-#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
+#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v, soma) private(i, j, k)
   {
 
     // A*B = aux
@@ -74,9 +77,6 @@ int main(int argc, char *argv[])
       }
     }
 
-    // printf("%s\n\n", "aux");
-    // printMatrix(w, w, aux);
-
     // aux*C = D
 #pragma omp for
     for (i = 0; i < v; i++)
@@ -90,14 +90,22 @@ int main(int argc, char *argv[])
         }
       }
     }
+
+#pragma omp for
+    for (i = 0; i < y; i++)
+    {
+      for (j = 0; j < 1; j++)
+      {
+        soma += matrizD[i * 1 + j];
+      }
+    }
   }
   // Fim da regiao paralela
-
-  printf("%s\n\n", arqD);
-  printMatrix(y, 1, matrizD);
+  writeMatrix(y, 1, matrizD, arqD);
+  printf("%.2f", soma);
 }
 
-int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
+int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
 {
   // printf("\nentrou\n");
 
@@ -114,7 +122,6 @@ int readmatrix(unsigned int rows, unsigned int cols, float *a, const char *filen
     for (j = 0; j < cols; ++j)
     {
       fscanf(pf, "%s", k);
-      // printf("%s\t", k);
       a[i * cols + j] = strtof(k, NULL);
     }
   }
@@ -135,5 +142,26 @@ int printMatrix(int rows, int cols, float *a)
     }
     printf("\n");
   }
+  return 1;
+}
+
+int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
+{
+  FILE *pf;
+  pf = fopen(filename, "w");
+
+  if (pf == NULL)
+    return 0;
+
+  register unsigned int i, j;
+
+  for (i = 0; i < rows; ++i)
+  {
+    for (j = 0; j < cols; ++j)
+    {
+      fprintf(pf, "%.2f\n", a[i * cols + j]);
+    }
+  }
+  fclose(pf);
   return 1;
 }
