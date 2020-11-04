@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/time.h>
 
+#define BILLION  1000000000.0
+
 int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
 int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
@@ -62,7 +64,9 @@ int main(int argc, char *argv[])
 
   // Inicio de uma regiao paralela
 
-  clock_t begin = clock();
+  struct timeval start, end;
+
+	gettimeofday(&start, NULL);
 
 #pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
   {
@@ -109,10 +113,13 @@ int main(int argc, char *argv[])
     }
   }
 
-  clock_t end = clock();
-  time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+  gettimeofday(&end, NULL);
 
-  printf("Time elpased is %f seconds\n", time_spent);
+	long seconds = (end.tv_sec - start.tv_sec);
+	long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+	printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+
   writeMatrix(y, 1, matrizD, arqD);
   printf("%.2f", soma);
 }
