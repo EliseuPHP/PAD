@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	long seconds = (end.tv_sec - start.tv_sec);
 	long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
-	printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+	// printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
   writeMatrix(y, 1, matrizD, arqD);
   printf("%.2f\n", soma);
