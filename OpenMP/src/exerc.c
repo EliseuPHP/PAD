@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
   writeMatrix(y, 1, matrizD, arqD);
-  printf("%.2f", soma);
+  printf("%.2f\n", soma);
 }
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
