@@ -45,4 +45,4 @@ Após o teste foi criado um gráfico mostrando os tempos de execução de cada d
 - Na operação onde y, w e v eram 100 foi obtido o tempo médio de 1,364 milisegundos.
 - Na operação onde y, w e v eram 1000 foi obtido o tempo médio de 3539,051 milisegundos.
 
-Pode ser observado que o aumento no tempo de execução não é linear.
+Pode ser observado que o aumento no tempo de execução não é linear e sim exponencial, porém, provavelmente pelo fato do programa ser realizado em várias threads torna a execução dele muito mais rápida, pensando que na primeira operação usamos matrizes com até 100 elementos em cada e na segunda operação com 10000 o tempo de execucao da segunda operação é cerca de dez vezes menos que o esperado.
