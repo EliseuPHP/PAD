@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define BILLION  1000000000.0
+#define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J))
 
 int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
   struct timeval start, end;
 
-	gettimeofday(&start, NULL);
+  gettimeofday(&start, NULL);
 
 #pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
   {
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
       for (j = 0; j < v; j++)
       {
         aux[i * v + j] = 0.0;
-        for (k = 0; k < v; k++)
+        for (k = 0; k < w; k++)
         {
           aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
         }
@@ -88,19 +88,20 @@ int main(int argc, char *argv[])
 
     // aux*C = D
 #pragma omp for
-    for (i = 0; i < v; i++)
+    for (i = 0; i < y; i++)
     {
       for (j = 0; j < 1; j++)
       {
         matrizD[i * 1 + j] = 0.0;
-        for (k = 0; k < 1; k++)
+        for (k = 0; k < v; k++)
         {
+          // printf("%.2f   =   %.2f   +   %.2f   *   %.2f\n", matrizD[i * 1 + j], matrizD[i * 1 + j], aux[i * v + k], matrizC[k * 1 + j]);
           matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
         }
       }
     }
   }
-// Fim da regiao paralela
+  // Fim da regiao paralela
 
 // Soma
 #pragma omp parallel for reduction(+ \
@@ -115,10 +116,10 @@ int main(int argc, char *argv[])
 
   gettimeofday(&end, NULL);
 
-	long seconds = (end.tv_sec - start.tv_sec);
-	long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+  long seconds = (end.tv_sec - start.tv_sec);
+  long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
-	// printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+  // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
   writeMatrix(y, 1, matrizD, arqD);
   printf("%.2f\n", soma);
