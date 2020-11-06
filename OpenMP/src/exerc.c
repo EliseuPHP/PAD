@@ -4,8 +4,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J))
-
 int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
 int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);
