@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   // Fim da regiao paralela
 
 // Soma
-#pragma omp parallel for shared(matrizD) private(i,j) reduction(+:soma)
+#pragma omp parallel for shared(matrizD) private(i,j) reduction(+:soma) num_threads(4)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
