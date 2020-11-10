@@ -118,7 +118,7 @@ long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
 writeMatrix(y, 1, matrizD, arqD);
-printf("%f\n", soma);
+printf("%.2f\n", soma);
 }
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
