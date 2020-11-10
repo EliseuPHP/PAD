@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
 
 // Soma
 #pragma omp parallel for private(i,j) reduction(+:soma)
+printf("salve\n");
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
