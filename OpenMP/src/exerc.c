@@ -102,8 +102,7 @@ int main(int argc, char *argv[])
   // Fim da regiao paralela
 
 // Soma
-#pragma omp parallel for reduction(+ \
-                                   : soma)
+#pragma omp parallel for private(i,j) reduction(+:soma)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
@@ -111,16 +110,15 @@ int main(int argc, char *argv[])
       soma += matrizD[i * 1 + j];
     }
   }
+gettimeofday(&end, NULL);
 
-  gettimeofday(&end, NULL);
+long seconds = (end.tv_sec - start.tv_sec);
+long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
-  long seconds = (end.tv_sec - start.tv_sec);
-  long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+// printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
-  // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
-
-  writeMatrix(y, 1, matrizD, arqD);
-  printf("%.2f\n", soma);
+writeMatrix(y, 1, matrizD, arqD);
+printf("%.2f\n", soma);
 }
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
