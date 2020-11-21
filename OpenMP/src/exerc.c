@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   int j;
   int k;
 
-  float soma = 0.0;
+  double soma = 0.0;
 
   double time_spent = 0.0;
 

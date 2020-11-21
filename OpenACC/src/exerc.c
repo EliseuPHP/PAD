@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   int j;
   int k;
 
-  float soma = 0.0;
+  double soma = 0.0;
 
   double time_spent = 0.0;
 
@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
   // Fim da regiao paralela
 
   // Soma
+  #pragma acc parallel loop reduction(+:soma)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
