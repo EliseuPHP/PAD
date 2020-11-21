@@ -103,10 +103,10 @@ int main(int argc, char *argv[])
       }
     }
   }
-  // Fim da regiao paralela
+// Fim da regiao paralela
 
-  // Soma
-  #pragma acc parallel loop reduction(+:soma)
+// Soma
+#pragma acc parallel loop collapse(2) reduction(+:soma)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
