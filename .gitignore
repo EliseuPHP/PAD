@@ -1,6 +1,7 @@
 *.o
-*.exe
 
 .vscode
 
 arqD.dat
+
+test.c

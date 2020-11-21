@@ -9,7 +9,7 @@
 CC=gcc
 # 
 # Parametro para compilacao OpenMP
-LIB=-fopenmp
+LIB=-fopenacc 
 #
 # Arquivos fonte
 FONTES=exerc.c
@@ -27,7 +27,7 @@ EXECUTAVEL=programa
 all: $(EXECUTAVEL)
 
 programa: $(FONTES)
-	$(CC) $(LIB) $(FONTES) -o $(DIRETORIOPROGRAMA)/programa
+	$(CC) $(LIB) $(FONTES) -o $(DIRETORIOPROGRAMA)/programa 
 
 #Limpeza
 clean:

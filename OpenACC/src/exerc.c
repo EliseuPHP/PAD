@@ -1,4 +1,4 @@
-#include <omp.h> // Cabecalho para o OpenMP
+#include <openacc.h> // Cabecalho para o OpenACC
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,43 +66,46 @@ int main(int argc, char *argv[])
 
   gettimeofday(&start, NULL);
 
-#pragma omp parallel shared(matrizA, matrizB, matrizC, aux, y, v) private(i, j, k)
+#pragma acc data copy(matrizA, matrizB, matrizC, aux) copyout(matrizD)
   {
-
     // A*B = aux
-
-#pragma omp for
-    for (i = 0; i < y; i++)
+#pragma acc parallel
     {
-      for (j = 0; j < v; j++)
+#pragma acc loop collapse(3)
+      for (i = 0; i < y; i++)
       {
-        aux[i * v + j] = 0.0;
-        for (k = 0; k < w; k++)
+        for (j = 0; j < v; j++)
         {
-          aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+          // aux[i * v + j] = 0.0;
+          for (k = 0; k < w; k++)
+          {
+            aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+          }
         }
       }
     }
-
     // aux*C = D
-#pragma omp for
-    for (i = 0; i < y; i++)
+
+#pragma acc parallel
     {
-      for (j = 0; j < 1; j++)
+#pragma acc loop collapse(3)
+      for (i = 0; i < y; i++)
       {
-        matrizD[i * 1 + j] = 0.0;
-        for (k = 0; k < v; k++)
+        for (j = 0; j < 1; j++)
         {
-          // printf("%.2f   =   %.2f   +   %.2f   *   %.2f\n", matrizD[i * 1 + j], matrizD[i * 1 + j], aux[i * v + k], matrizC[k * 1 + j]);
-          matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+          // matrizD[i * 1 + j] = 0.0;
+          for (k = 0; k < v; k++)
+          {
+            // printf("%.2f   =   %.2f   +   %.2f   *   %.2f\n", matrizD[i * 1 + j], matrizD[i * 1 + j], aux[i * v + k], matrizC[k * 1 + j]);
+            matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+          }
         }
       }
     }
   }
   // Fim da regiao paralela
 
-// Soma
-#pragma omp parallel for shared(matrizD) private(i,j) reduction(+:soma) num_threads(4)
+  // Soma
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
@@ -110,15 +113,15 @@ int main(int argc, char *argv[])
       soma += matrizD[i * 1 + j];
     }
   }
-gettimeofday(&end, NULL);
+  gettimeofday(&end, NULL);
 
-long seconds = (end.tv_sec - start.tv_sec);
-long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+  long seconds = (end.tv_sec - start.tv_sec);
+  long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
-// printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+  // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
-writeMatrix(y, 1, matrizD, arqD);
-printf("%.2f\n", soma);
+  writeMatrix(y, 1, matrizD, arqD);
+  printf("%.2f\n", soma);
 }
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
