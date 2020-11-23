@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
   gettimeofday(&start, NULL);
 
   // Inicio de uma regiao paralela
-#pragma acc enter data copyin(matrizA, matrizB, aux)
   // A*B = aux
 #pragma acc parallel
   {
@@ -70,13 +69,11 @@ int main(int argc, char *argv[])
       }
     }
   }
-#pragma acc exit data delete (matrizA, matrizB)
 
   // Desaloca matrizes já utilizadas
   free(matrizA);
   free(matrizB);
 
-#pragma acc enter data copyin(aux, matrizC, matrizD)
   // aux*C = D
 #pragma acc parallel
   {
@@ -93,7 +90,6 @@ int main(int argc, char *argv[])
       }
     }
   }
-#pragma acc exit data delete (aux, matrizC)
 
   // Desaloca matrizes já utilizadas
   free(matrizC);
@@ -109,7 +105,6 @@ int main(int argc, char *argv[])
       soma += matrizD[i * 1 + j];
     }
   }
-#pragma acc exit data copyout(matrizD)
   // Fim da regiao paralela
 
   //  Fim da contagem do tempo
