@@ -54,46 +54,48 @@ int main(int argc, char *argv[])
   gettimeofday(&start, NULL);
 
   // Inicio de uma regiao paralela
-#pragma acc data copy(matrizA, matrizB, matrizC, aux) copyout(matrizD)
+#pragma acc enter data copyin(matrizA, matrizB, aux)
+  // A*B = aux
+#pragma acc parallel
   {
-    // A*B = aux
-#pragma acc parallel
-    {
 #pragma acc loop collapse(3)
-      for (i = 0; i < y; i++)
-      {
-        for (j = 0; j < v; j++)
-        {
-          for (k = 0; k < w; k++)
-          {
-            aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
-          }
-        }
-      }
-    }
-
-    // aux*C = D
-#pragma acc parallel
+    for (i = 0; i < y; i++)
     {
-#pragma acc loop collapse(3)
-      for (i = 0; i < y; i++)
+      for (j = 0; j < v; j++)
       {
-        for (j = 0; j < 1; j++)
+        for (k = 0; k < w; k++)
         {
-          // matrizD[i * 1 + j] = 0.0;
-          for (k = 0; k < v; k++)
-          {
-            matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
-          }
+          aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
         }
       }
     }
   }
-  // Fim da regiao paralela
+#pragma acc exit data delete (matrizA, matrizB)
 
   // Desaloca matrizes já utilizadas
   free(matrizA);
   free(matrizB);
+
+#pragma acc enter data copyin(aux, matrizC, matrizD)
+  // aux*C = D
+#pragma acc parallel
+  {
+#pragma acc loop collapse(3)
+    for (i = 0; i < y; i++)
+    {
+      for (j = 0; j < 1; j++)
+      {
+        // matrizD[i * 1 + j] = 0.0;
+        for (k = 0; k < v; k++)
+        {
+          matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+        }
+      }
+    }
+  }
+#pragma acc exit data delete (aux, matrizC)
+
+  // Desaloca matrizes já utilizadas
   free(matrizC);
   free(aux);
 
@@ -107,6 +109,8 @@ int main(int argc, char *argv[])
       soma += matrizD[i * 1 + j];
     }
   }
+#pragma acc exit data copyout(matrizD)
+  // Fim da regiao paralela
 
   //  Fim da contagem do tempo
   gettimeofday(&end, NULL);
@@ -116,7 +120,7 @@ int main(int argc, char *argv[])
   long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
   // Printa o tempo de execução da regiao paralela
-  // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+  printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
   // Escreve matriz D no arquivo
   writeMatrix(y, 1, matrizD, arqD);
