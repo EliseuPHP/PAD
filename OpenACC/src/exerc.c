@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
   y = atoi(argv[1]);
   w = atoi(argv[2]);
   v = atoi(argv[3]);
-  char arqA[10];
-  char arqB[10];
-  char arqC[10];
-  char arqD[10];
+  char arqA[100];
+  char arqB[100];
+  char arqC[100];
+  char arqD[100];
   strcpy(arqA, argv[4]);
   strcpy(arqB, argv[5]);
   strcpy(arqC, argv[6]);
@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
       {
         for (j = 0; j < v; j++)
         {
-          // aux[i * v + j] = 0.0;
           for (k = 0; k < w; k++)
           {
             aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
@@ -131,25 +130,20 @@ int main(int argc, char *argv[])
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
 {
-  // printf("\nentrou\n");
-
   FILE *pf;
   pf = fopen(filename, "r");
   if (pf == NULL)
     return 0;
 
   register unsigned int i, j;
-  char k[15];
 
   for (i = 0; i < rows; ++i)
   {
     for (j = 0; j < cols; ++j)
     {
-      fscanf(pf, "%s", k);
-      a[i * cols + j] = strtof(k, NULL);
+      fscanf(pf, "%f", &a[i * cols + j]);
     }
   }
-  // printf("\npassou\n");
   fclose(pf);
   return 1;
 }
