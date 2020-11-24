@@ -54,10 +54,9 @@ int main(int argc, char *argv[])
   gettimeofday(&start, NULL);
 
   // Inicio de uma regiao paralela
-  // A*B = aux
-#pragma acc parallel
+  // Primeira multiplicação de matrizes a ser realizada: A*B = aux
+#pragma acc kernels
   {
-#pragma acc loop collapse(3)
     for (i = 0; i < y; i++)
     {
       for (j = 0; j < v; j++)
@@ -69,20 +68,20 @@ int main(int argc, char *argv[])
       }
     }
   }
+  // Fim de uma regiao paralela
 
   // Desaloca matrizes já utilizadas
   free(matrizA);
   free(matrizB);
 
-  // aux*C = D
-#pragma acc parallel
+  // Inicio de uma regiao paralela
+  // Segunda multiplicação de matrizes a ser realizada: aux*C = D
+#pragma acc kernels
   {
-#pragma acc loop collapse(3)
     for (i = 0; i < y; i++)
     {
       for (j = 0; j < 1; j++)
       {
-        // matrizD[i * 1 + j] = 0.0;
         for (k = 0; k < v; k++)
         {
           matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
@@ -90,14 +89,16 @@ int main(int argc, char *argv[])
       }
     }
   }
+  // Fim de uma regiao paralela
 
   // Desaloca matrizes já utilizadas
   free(matrizC);
   free(aux);
 
+  // Inicio de uma regiao paralela
   // Redução da matrizD por soma
-#pragma acc parallel loop collapse(2) reduction(+ \
-                                                : soma)
+#pragma acc kernels loop reduction(+ \
+                                   : soma)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
