@@ -27,8 +27,8 @@ A compilação do código deve ser feita utilizando o makefile, simplesmente rod
 Como dito anteriormente a execução do código pode ser dividida em quatro partes:
 - Antes da primeira parte o código lê as variáveis que foram inicializadas na linha de comando do programa e as armazena em variáveis dentro do programa
 1. A primeira parte do código envia as matrizes, que foram alocadas dinamicamente usando uma etapa somente, para a função *readMatrix*. Essa função ira entrar no dado arquivo para que seus dados sejam armazenados em uma matriz dentro do programa, fazendo isso para as matrizes A, B e C.
-2. A segunda parte do código é onde será utilizada a biblioteca **OpenACC**. Já alocadas as três matrizes que serão usadas para a equação, o código entra na seguinte "função" `#pragma acc kernels` para cada uma das duas operações realizadas nessa parte código, onde essa função dá ao compilador uma liberdade de optimizar as operações seguintes a ela. As operaçoes nessa parte do código são as de multiplicação de matrizes.
-3. Na terceira parte do código é realizada a redução por soma da matriz resultante da equação. Foi utilizada da "função" `#pragma omp parallel for shared(matrizD) private(i,j) reduction(+:soma) num_threads(4)` onde ela separa o loop de soma para várias threads.
+2. A segunda e tercera parte do código é onde será utilizada a biblioteca **OpenACC**. Já alocadas as três matrizes que serão usadas para a equação, o código entra na seguinte "função" `#pragma acc kernels loop collapse(2)` para cada uma das duas operações realizadas nessa parte código, onde essa função `kernels` dá ao compilador uma liberdade de optimizar as operações seguintes a ela e em conjunto com `loop collapse(2)` foi obtido uma diminuição de 1 segundo no tempo de execução total do código para "y = 1000, w = 1000, v = 1000" (`loop collapse(3)` aumentava o tempo de execução total para 19 segundos). As operações nessa parte do código são as de multiplicação de matrizes.
+3. Na terceira parte do código é realizada a redução por soma da matriz resultante da equação. Foi utilizada da "função" `#pragma acc kernels loop collapse(2) reduction(+ : soma)` onde ela separa o loop de soma em várias regiões paralelas da GPU, no final somando o valor de soma em uma única variável. Nessa parte também obteves-se uma diminuição de 1 segundo no tempo de execução (para "y = 1000, w = 1000, v = 1000") total do código devido ao `collapse(2)`.
 4. Na última etapa do código é realizada a escrita no arquivo utilizando da função *writeMatrix*. Essa função ira entrar no dado arquivo e escrever nele os dados da matriz que for enviada para a função, no caso a matriz resultante da equação.
 - Após as seguintes etapas o programa irá escrever na tela o valor encontrado na soma dos valores da matriz resultante.
 
@@ -38,11 +38,13 @@ Para testar o código e calcular o tempo de execução foram utilizados os parâ
 - y = 100, w = 100, v = 100
 - y = 1000, w = 1000, v = 1000
 
-Após o teste foi criado um gráfico mostrando os tempos de execução de cada dos parâmetros:
+Após o teste foi criado um gráfico mostrando os tempos de execução de cada dos parâmetros e comparando com o tempo do laboratório anterior:
 ![alt text]( https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vS-IUIbwi4TUUTUsI6E_X02x5UrpaSzoVF2DIWsBRMGeSStl2a7GJZ9VRyakJueZ4c2U-z9QwUJz2wr/pubchart?oid=539508022&format=image "Gráfico obtido")
 
-- Na operação onde y, w e v eram 10 foi obtido o tempo médio de 0,025 milisegundos.
-- Na operação onde y, w e v eram 100 foi obtido o tempo médio de 14,761 milisegundos.
-- Na operação onde y, w e v eram 1000 foi obtido o tempo médio de 16331,693 milisegundos.
+Foi usada uma escala logarítmica no grafico para a melhor visualização dos dados.
 
-Pode ser observado que o aumento no tempo de execução não é linear e sim exponencial, porém, provavelmente pelo fato do programa ser realizado em várias threads torna a execução dele muito mais rápida, pensando que na primeira operação usamos matrizes com até 100 elementos em cada e na segunda operação com 10 000 o tempo de execução da segunda operação é cerca de dez vezes menos que o esperado, entretanto na terceira operação, que usa até 1 000 000 (um milhão) em cada matriz o tempo de execução foi cerca de três vezes maior do que seria linearmente, voltando a ideia do aumento do tempo ser exponencial, porém, o aumento no tempo de processamento não se deve apenas ao tamanho da matriz, da-se também pelo fato que aumenta o número de processos em cada uma das threads gerando um gargalo nelas.
+- Na operação onde y, w e v eram 10 foi obtido o tempo médio de 0,023 milisegundos.
+- Na operação onde y, w e v eram 100 foi obtido o tempo médio de 12,238 milisegundos.
+- Na operação onde y, w e v eram 1000 foi obtido o tempo médio de 14802,182 milisegundos.
+
+Acredito que essa grande diferença de performance entre as Bibliotecas OpenMP e OpenACC se dá ao fato das operações de copyin e copyout para levar os dados à GPU, tanto que quando são poucos os dados (y = 10, w = 10, v = 10), a execução é cerca de dez vezes mais rápida que a mesma em OpenMP, porém com o aumento dos dados ela se torna exponencialmente mais demorada. 
