@@ -55,19 +55,18 @@ int main(int argc, char *argv[])
 
   // Inicio de uma regiao paralela
   // Primeira multiplicação de matrizes a ser realizada: A*B = aux
-#pragma acc kernels
+#pragma acc kernels loop collapse(2)
+  for (i = 0; i < y; i++)
   {
-    for (i = 0; i < y; i++)
+    for (j = 0; j < v; j++)
     {
-      for (j = 0; j < v; j++)
+      for (k = 0; k < w; k++)
       {
-        for (k = 0; k < w; k++)
-        {
-          aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
-        }
+        aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
       }
     }
   }
+
   // Fim de uma regiao paralela
 
   // Desaloca matrizes já utilizadas
@@ -76,19 +75,18 @@ int main(int argc, char *argv[])
 
   // Inicio de uma regiao paralela
   // Segunda multiplicação de matrizes a ser realizada: aux*C = D
-#pragma acc kernels
+#pragma acc kernels loop collapse(2)
+  for (i = 0; i < y; i++)
   {
-    for (i = 0; i < y; i++)
+    for (j = 0; j < 1; j++)
     {
-      for (j = 0; j < 1; j++)
+      for (k = 0; k < v; k++)
       {
-        for (k = 0; k < v; k++)
-        {
-          matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
-        }
+        matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
       }
     }
   }
+
   // Fim de uma regiao paralela
 
   // Desaloca matrizes já utilizadas
@@ -97,7 +95,7 @@ int main(int argc, char *argv[])
 
   // Inicio de uma regiao paralela
   // Redução da matrizD por soma
-#pragma acc kernels loop reduction(+ \
+#pragma acc kernels loop collapse(2) reduction(+ \
                                    : soma)
   for (i = 0; i < y; i++)
   {
