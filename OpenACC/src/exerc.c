@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   readMatrix(w, v, matrizB, arqB);
   readMatrix(v, 1, matrizC, arqC);
 
-  // Declaração de variáveis que serão usadas para a multiplicação
+  // Declaração de variáveis que serão usadas para a multiplicação e redução
   int i;
   int j;
   int k;
@@ -53,41 +53,55 @@ int main(int argc, char *argv[])
   // Inicia a contagem de tempo da região paralela
   gettimeofday(&start, NULL);
 
+  // Copia de dados necessários para a GPU.
+#pragma acc enter data copyin(matrizA, matrizB, aux)
+
   // Inicio de uma regiao paralela
   // Primeira multiplicação de matrizes a ser realizada: A*B = aux
-#pragma acc kernels loop collapse(2)
-  for (i = 0; i < y; i++)
+#pragma acc parallel
   {
-    for (j = 0; j < v; j++)
+#pragma acc loop collapse(2)
+    for (i = 0; i < y; i++)
     {
-      for (k = 0; k < w; k++)
+      for (j = 0; j < v; j++)
       {
-        aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+        for (k = 0; k < w; k++)
+        {
+          aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+        }
       }
     }
   }
-
-  // Fim de uma regiao paralela
+  // Fim da regiao paralela
+  //Apaga da GPU os dados que não são mais necessários.
+#pragma acc exit data delete (matrizA, matrizB)
 
   // Desaloca matrizes já utilizadas
   free(matrizA);
   free(matrizB);
 
+  // Copia de dados necessários para a GPU.
+#pragma acc enter data copyin(aux, matrizC, matrizD)
+
   // Inicio de uma regiao paralela
   // Segunda multiplicação de matrizes a ser realizada: aux*C = D
-#pragma acc kernels loop collapse(2)
-  for (i = 0; i < y; i++)
+#pragma acc parallel
   {
-    for (j = 0; j < 1; j++)
+#pragma acc loop collapse(2)
+    for (i = 0; i < y; i++)
     {
-      for (k = 0; k < v; k++)
+      for (j = 0; j < 1; j++)
       {
-        matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+        for (k = 0; k < v; k++)
+        {
+          matrizD[i * 1 + j] = matrizD[i * 1 + j] + aux[i * v + k] * matrizC[k * 1 + j];
+        }
       }
     }
   }
-
-  // Fim de uma regiao paralela
+  // Fim da regiao paralela
+  //Apaga da GPU os dados que não são mais necessários.
+#pragma acc exit data delete (aux, matrizC)
 
   // Desaloca matrizes já utilizadas
   free(matrizC);
@@ -95,8 +109,8 @@ int main(int argc, char *argv[])
 
   // Inicio de uma regiao paralela
   // Redução da matrizD por soma
-#pragma acc kernels loop collapse(2) reduction(+ \
-                                   : soma)
+#pragma acc parallel loop collapse(2) reduction(+ \
+                                                : soma)
   for (i = 0; i < y; i++)
   {
     for (j = 0; j < 1; j++)
@@ -104,6 +118,7 @@ int main(int argc, char *argv[])
       soma += matrizD[i * 1 + j];
     }
   }
+#pragma acc exit data copyout(matrizD)
   // Fim da regiao paralela
 
   //  Fim da contagem do tempo
