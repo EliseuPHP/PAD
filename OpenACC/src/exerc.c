@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
   long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
 
   // Printa o tempo de execução da regiao paralela
-  printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
+  // printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
   // Escreve matriz D no arquivo
   writeMatrix(y, 1, matrizD, arqD);
