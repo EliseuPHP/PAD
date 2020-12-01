@@ -40,6 +40,7 @@ Para testar o código e calcular o tempo de execução foram utilizados os parâ
 - y = 1000, w = 1000, v = 1000
 
 Após o teste foi criado um gráfico mostrando os tempos de execução de cada dos parâmetros e comparando com o tempo do laboratório anterior:
+
 ![alt text]( https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vS-IUIbwi4TUUTUsI6E_X02x5UrpaSzoVF2DIWsBRMGeSStl2a7GJZ9VRyakJueZ4c2U-z9QwUJz2wr/pubchart?oid=539508022&format=image "Gráfico obtido")
 
 Foi usada uma escala logarítmica no gráfico para a melhor visualização dos dados.
