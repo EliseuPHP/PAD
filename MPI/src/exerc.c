@@ -20,6 +20,11 @@ int v;
 int main(int argc, char *argv[])
 {
     int quantProcs, rank, numWorkers, fonte, dest, mtype, rows, averow, extra, offset, rc;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     // int yAverow, yExtra, yOffset,
     //     wAverow, wExtra, wOffset,
     //     vAverow, vExtra, vOffset;
@@ -45,11 +50,6 @@ int main(int argc, char *argv[])
     float *matrizD = (float *)malloc(y * 1 * sizeof(float));
     float *aux = (float *)malloc(y * v * sizeof(float));
 
-    // Ler os valores dos dados arquivos pelo ArgV para suas respectivas matrizes
-    readMatrix(y, w, matrizA, arqA);
-    readMatrix(w, v, matrizB, arqB);
-    readMatrix(v, 1, matrizC, arqC);
-
     // Declaração de variáveis que serão usadas para a multiplicação e redução
     int i;
     int j;
@@ -57,16 +57,17 @@ int main(int argc, char *argv[])
 
     double soma = 0.0;
 
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-   
     numWorkers = quantProcs - 1;
 
     /**************************** master task ************************************/
     if (rank == MASTER)
     {
-        
+
+        // Ler os valores dos dados arquivos pelo ArgV para suas respectivas matrizes
+        readMatrix(y, w, matrizA, arqA);
+        readMatrix(w, v, matrizB, arqB);
+        readMatrix(v, 1, matrizC, arqC);
+
         double start = MPI_Wtime();
 
         averow = y / numWorkers;
@@ -93,7 +94,6 @@ int main(int argc, char *argv[])
             MPI_Recv(&aux[posicao(offset, 0, v)], rows * v, MPI_FLOAT, fonte, mtype,
                      MPI_COMM_WORLD, &status);
         }
-
 
         printf("******************************************************\n");
         printf("Result Matrix:\n");
