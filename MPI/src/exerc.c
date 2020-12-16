@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&matrizA[offset], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&matrizB, w * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
-            offset = offset + rows;
+            // offset = offset + rows;
+            offset = offset + rows * w;
         }
 
         mtype = FROM_WORKER;
