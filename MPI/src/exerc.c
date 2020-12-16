@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
                 matrizD[posicao(i, k, v)] = 0.0;
                 for (j = 0; j < 1; j++)
                 {
-                    matrizD[i * v + k] = matrizD[i * v + k] + aux[i * w + j] * matrizC[j * v + k];
+                    matrizD[i * 1 + k] = matrizD[i * 1 + k] + aux[i * v + j] * matrizC[j * 1 + k];
                 }
             }
         }
