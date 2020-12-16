@@ -86,8 +86,7 @@ int main(int argc, char *argv[])
             rows = (dest <= extra) ? averow + 1 : averow;
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&matrizA[posicao(offset, 0, w)], rows * w, MPI_FLOAT, dest, mtype,
-                     MPI_COMM_WORLD);
+            MPI_Send(&matrizA[posicao(offset, 0, w)], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&matrizB, w * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             offset = offset + rows;
         }
@@ -99,8 +98,7 @@ int main(int argc, char *argv[])
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&aux[posicao(offset, 0, v)], rows * v, MPI_FLOAT, fonte, mtype,
-                     MPI_COMM_WORLD, &status);
+            MPI_Recv(&aux[posicao(offset, 0, v)], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
         }
 
         printf("******************************************************\n");
