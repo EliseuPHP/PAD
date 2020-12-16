@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // int yAverow, yExtra, yOffset,
+    int auxAverow, auxExtra, auxOffset, auxRows;
     //     wAverow, wExtra, wOffset,
     //     vAverow, vExtra, vOffset;
     MPI_Status status;
@@ -82,10 +82,11 @@ int main(int argc, char *argv[])
 
         double start = MPI_Wtime();
 
+        //a b sender
+
         averow = y / numWorkers;
         extra = y % numWorkers;
         offset = 0;
-        printf("Passou calculos.\n");
 
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
@@ -101,14 +102,22 @@ int main(int argc, char *argv[])
             offset = offset + rows * w;
         }
 
+        //aux receiver
+        auxAverow = y / numWorkers;
+        auxExtra = y % numWorkers;
+        auxOffset = 0;
+
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
         {
+            auxRows = (i <= auxExtra) ? auxAverow + 1 : auxAverow;
             printf("Dentro for master receiver %d.\n", i);
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&aux[offset], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&aux[auxOffset], auxRows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
+
+            auxOffset = auxOffset + auxRows * v;
         }
 
         printf("******************************************************\n");
