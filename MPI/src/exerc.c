@@ -8,6 +8,8 @@
 #define FROM_MASTER 1 /* setting a message type */
 #define FROM_WORKER 2 /* setting a message type */
 
+#define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J))
+
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);  //Função para preencher uma matriz com os dados recebidos de um arquivo.
 int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename); //Função para preencher um arquivo com os dados recebidos de uma matriz.
 
@@ -99,9 +101,9 @@ int main(int argc, char *argv[])
             // printf("Sending %d rows to task %d offset=%d\n",rows,dest,offset);
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&a[offset][0], rows * w, MPI_DOUBLE, dest, mtype,
+            MPI_Send(&matrizA[posicao(offset, 0, w)], rows * w, MPI_DOUBLE, dest, mtype,
                      MPI_COMM_WORLD);
-            MPI_Send(&b, w * v, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&matrizB, w * v, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
             offset = offset + rows;
         }
 
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&c[offset][0], rows * v, MPI_DOUBLE, fonte, mtype,
+            MPI_Recv(&aux[posicao(offset, 0, v)], rows * v, MPI_DOUBLE, fonte, mtype,
                      MPI_COMM_WORLD, &status);
             // printf("Received results from task %d\n",fonte);
         }
@@ -125,7 +127,7 @@ int main(int argc, char *argv[])
         {
             printf("\n");
             for (j = 0; j < v; j++)
-                printf("%6.2f   ", c[i][j]);
+                printf("%6.2f   ", aux[posicao(i, j, v)]);
         }
         printf("\n******************************************************\n");
 
@@ -140,20 +142,24 @@ int main(int argc, char *argv[])
         mtype = FROM_MASTER;
         MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(&a, rows * w, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(&b, w * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&matrizA, rows * w, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&matrizB, w * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        for (k = 0; k < v; k++)
-            for (i = 0; i < rows; i++)
+        for (i = 0; i < rows; i++)
+        {
+            for (j = 0; j < v; j++)
             {
-                c[i][k] = 0.0;
-                for (j = 0; j < w; j++)
-                    c[i][k] = c[i][k] + a[i][j] * b[j][k];
+                aux[i * v + j] = 0.0;
+                for (k = 0; k < w; k++)
+                {
+                    aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
+                }
             }
+        }
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        MPI_Send(&c, rows * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(&aux, rows * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
     }
     MPI_Finalize();
 }
