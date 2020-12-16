@@ -10,6 +10,7 @@
 
 #define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J))
 
+int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);  //Função para preencher uma matriz com os dados recebidos de um arquivo.
 int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename); //Função para preencher um arquivo com os dados recebidos de uma matriz.
 
@@ -103,13 +104,7 @@ int main(int argc, char *argv[])
         }
 
         printf("******************************************************\n");
-        printf("Result Matrix:\n");
-        for (i = 0; i < y; i++)
-        {
-            printf("\n");
-            for (j = 0; j < v; j++)
-                printf("%6.2f   ", aux[posicao(i, j, v)]);
-        }
+        printMatrix(y, v, aux);
         printf("\n******************************************************\n");
 
         double finish = MPI_Wtime();
@@ -132,7 +127,7 @@ int main(int argc, char *argv[])
         {
             for (i = 0; i < rows; i++)
             {
-                aux[i * v + k] = 2.0;
+                aux[k * v + i] = 2.0;
 
                 // for (j = 0; j < w; j++)
                 //     c[i][k] = c[i][k] + a[i][j] * b[j][k];
@@ -186,5 +181,20 @@ int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *file
         }
     }
     fclose(pf);
+    return 1;
+}
+
+int printMatrix(int rows, int cols, float *a)
+{
+    register unsigned int i, j;
+
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            printf("%.2f\t", a[i * cols + j]);
+        }
+        printf("\n");
+    }
     return 1;
 }
