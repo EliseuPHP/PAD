@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
             rows = (dest <= extra) ? averow + 1 : averow;
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(matrizA[offset], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&matrizA[offset], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(matrizB, w * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             // offset = offset + rows;
             offset = offset + rows * w;
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(aux[offset], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&aux[offset], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
         }
 
         printf("******************************************************\n");
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
     {
 
         printf("Dentro worker %d.\n", rank);
-        
+
         // Criaçao e alocação das matrizes em uma etapa
         matrizA = (float *)malloc(y * w * sizeof(float));
         matrizB = (float *)malloc(w * v * sizeof(float));
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        MPI_Send(aux, rows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(&aux, rows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
     }
     MPI_Finalize();
 }
