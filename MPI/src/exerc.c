@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     /**************************** master task ************************************/
     if (rank == MASTER)
     {
+        printf("mpi_mm has started with %d tasks.\n", quantProcs);
 
         // Ler os valores dos dados arquivos pelo ArgV para suas respectivas matrizes
         readMatrix(y, w, matrizA, arqA);
