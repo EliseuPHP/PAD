@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
         {
             for (i = 0; i < rows; i++)
             {
-                aux[posicao(k, i, v)] = 2.0;
+                aux[posicao(i, k, v)] = rank;
                 // printf("%f\n", aux[posicao(k, i, v)]);
                 // for (j = 0; j < w; j++)
                 //     c[i][k] = c[i][k] + a[i][j] * b[j][k];
