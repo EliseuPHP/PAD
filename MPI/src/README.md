@@ -1,1 +1,1 @@
-mpirun --hostfile ../hosts -np 2 ./programa.o
+mpirun --hostfile ../hosts -np 2 ./programa.o 100 100 100 arqA.dat arqB.dat arqC.dat arqD.dat
