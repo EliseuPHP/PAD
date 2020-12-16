@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
         printf("Dentro worker %d.\n", rank);
 
-        // Criaçao e alocação das matrizes em uma etapa
+        // Alocação das matrizes em uma etapa
         matrizA = (float *)malloc(y * w * sizeof(float));
         matrizB = (float *)malloc(w * v * sizeof(float));
         matrizC = (float *)malloc(v * 1 * sizeof(float));
@@ -143,10 +143,10 @@ int main(int argc, char *argv[])
         {
             for (i = 0; i < rows; i++)
             {
-                aux[posicao(i, k, v)] = rank;
+                aux[posicao(i, k, v)] = 0.0;
                 for (j = 0; j < w; j++)
                 {
-                    // aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
+                    aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
                 }
             }
         }
