@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define MATSIZE 5
+#define MATSIZE 10
 #define NRA MATSIZE   /* number of rows in matrix A */
 #define NCA MATSIZE   /* number of columns in matrix A */
 #define NCB MATSIZE   /* number of columns in matrix B */
-#define MASTER 0      /* taskid of first task */
+#define MASTER 0      /* rank of first task */
 #define FROM_MASTER 1 /* setting a message type */
 #define FROM_WORKER 2 /* setting a message type */
 
@@ -21,18 +21,13 @@ int v;
 
 int main(int argc, char *argv[])
 {
-    int numtasks,              /* number of tasks in partition */
-        taskid,                /* a task identifier */
-        numworkers,            /* number of worker tasks */
-        source,                /* task id of message source */
-        dest,                  /* task id of message destination */
-        mtype,                 /* message type */
-        rows,                  /* rows of matrix A sent to each worker */
-        averow, extra, offset, /* used to determine rows sent to each worker */
-        rc;                    /* misc */
-    double a[NRA][NCA],        /* matrix A to be multiplied */
-        b[NCA][NCB],           /* matrix B to be multiplied */
-        c[NRA][NCB];           /* result matrix C */
+    int quantProcs, rank, numWorkers, fonte, dest, mtype, rows, averow, extra, offset, rc;
+    int yAverow, yExtra, yOffset,
+        wAverow, wExtra, wOffset,
+        vAverow, vExtra, vOffset;
+    double a[NRA][NCA],
+        b[NCA][NCB],
+        c[NRA][NCB];
     MPI_Status status;
 
     // Variáveis para receber valores do argv
@@ -68,20 +63,20 @@ int main(int argc, char *argv[])
     double soma = 0.0;
 
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
-    MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
-    if (numtasks < 2)
+    MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (quantProcs < 2)
     {
         printf("Need at least two MPI tasks. Quitting...\n");
         MPI_Abort(MPI_COMM_WORLD, rc);
         exit(1);
     }
-    numworkers = numtasks - 1;
+    numWorkers = quantProcs - 1;
 
     /**************************** master task ************************************/
-    if (taskid == MASTER)
+    if (rank == MASTER)
     {
-        printf("mpi_mm has started with %d tasks.\n", numtasks);
+        printf("mpi_mm has started with %d tasks.\n", quantProcs);
         // printf("Initializing arrays...\n");
         for (i = 0; i < NRA; i++)
             for (j = 0; j < NCA; j++)
@@ -94,11 +89,11 @@ int main(int argc, char *argv[])
         double start = MPI_Wtime();
 
         /* Send matrix data to the worker tasks */
-        averow = NRA / numworkers;
-        extra = NRA % numworkers;
+        averow = NRA / numWorkers;
+        extra = NRA % numWorkers;
         offset = 0;
         mtype = FROM_MASTER;
-        for (dest = 1; dest <= numworkers; dest++)
+        for (dest = 1; dest <= numWorkers; dest++)
         {
             rows = (dest <= extra) ? averow + 1 : averow;
             // printf("Sending %d rows to task %d offset=%d\n",rows,dest,offset);
@@ -112,14 +107,14 @@ int main(int argc, char *argv[])
 
         /* Receive results from worker tasks */
         mtype = FROM_WORKER;
-        for (i = 1; i <= numworkers; i++)
+        for (i = 1; i <= numWorkers; i++)
         {
-            source = i;
-            MPI_Recv(&offset, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&rows, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&c[offset][0], rows * NCB, MPI_DOUBLE, source, mtype,
+            fonte = i;
+            MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&c[offset][0], rows * NCB, MPI_DOUBLE, fonte, mtype,
                      MPI_COMM_WORLD, &status);
-            // printf("Received results from task %d\n",source);
+            // printf("Received results from task %d\n",fonte);
         }
 
         /* Print results */
@@ -140,7 +135,7 @@ int main(int argc, char *argv[])
     }
 
     /**************************** worker task ************************************/
-    if (taskid > MASTER)
+    if (rank > MASTER)
     {
         mtype = FROM_MASTER;
         MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
