@@ -187,12 +187,12 @@ int main(int argc, char *argv[])
         MPI_Recv(aux, auxRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizC, v * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        for (k = 0; k < v; k++)
+        for (k = 0; k < 1; k++)
         {
             for (i = 0; i < auxRows; i++)
             {
                 matrizD[posicao(i, k, v)] = 0.0;
-                for (j = 0; j < 1; j++)
+                for (j = 0; j < v; j++)
                 {
                     matrizD[i * 1 + k] = matrizD[i * 1 + k] + aux[i * v + j] * matrizC[j * 1 + k];
                 }
