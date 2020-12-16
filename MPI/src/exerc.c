@@ -45,11 +45,11 @@ int main(int argc, char *argv[])
     strcpy(arqD, argv[7]);
 
     // Criaçao e alocação das matrizes em uma etapa
-    float *matrizA = (float *)malloc(y * w * sizeof(float));
-    float *matrizB = (float *)malloc(w * v * sizeof(float));
-    float *matrizC = (float *)malloc(v * 1 * sizeof(float));
-    float *matrizD = (float *)malloc(y * 1 * sizeof(float));
-    float *aux = (float *)malloc(y * v * sizeof(float));
+    float *matrizA; // = (float *)malloc(y * w * sizeof(float));
+    float *matrizB; // = (float *)malloc(w * v * sizeof(float));
+    float *matrizC; // = (float *)malloc(v * 1 * sizeof(float));
+    float *matrizD; // = (float *)malloc(y * 1 * sizeof(float));
+    float *aux;     // = (float *)malloc(y * v * sizeof(float));
 
     // Declaração de variáveis que serão usadas para a multiplicação e redução
     int i;
@@ -64,6 +64,13 @@ int main(int argc, char *argv[])
     if (rank == MASTER)
     {
         printf("mpi_mm has started with %d tasks.\n", quantProcs);
+
+        // Criaçao e alocação das matrizes em uma etapa
+        matrizA = (float *)malloc(y * w * sizeof(float));
+        matrizB = (float *)malloc(w * v * sizeof(float));
+        matrizC = (float *)malloc(v * 1 * sizeof(float));
+        matrizD = (float *)malloc(y * 1 * sizeof(float));
+        aux = (float *)malloc(y * v * sizeof(float));
 
         // Ler os valores dos dados arquivos pelo ArgV para suas respectivas matrizes
         readMatrix(y, w, matrizA, arqA);
@@ -115,14 +122,21 @@ int main(int argc, char *argv[])
     /**************************** worker task ************************************/
     if (rank > MASTER)
     {
+
         printf("Dentro worker %d.\n", rank);
+        
+        // Criaçao e alocação das matrizes em uma etapa
+        matrizA = (float *)malloc(y * w * sizeof(float));
+        matrizB = (float *)malloc(w * v * sizeof(float));
+        matrizC = (float *)malloc(v * 1 * sizeof(float));
+        matrizD = (float *)malloc(y * 1 * sizeof(float));
+        aux = (float *)malloc(y * v * sizeof(float));
 
         mtype = FROM_MASTER;
         MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
-
 
         printf("Antes calculo.\n");
         for (k = 0; k < v; k++)
