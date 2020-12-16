@@ -38,10 +38,6 @@ int main(int argc, char *argv[])
     strcpy(arqC, argv[6]);
     strcpy(arqD, argv[7]);
 
-    double a[y][w],
-        b[w][v],
-        c[y][v];
-
     // Criaçao e alocação das matrizes em uma etapa
     float *matrizA = (float *)malloc(y * w * sizeof(float));
     float *matrizB = (float *)malloc(w * v * sizeof(float));
@@ -73,7 +69,6 @@ int main(int argc, char *argv[])
         
         double start = MPI_Wtime();
 
-        /* Send matrix data to the worker tasks */
         averow = y / numWorkers;
         extra = y % numWorkers;
         offset = 0;
@@ -110,7 +105,6 @@ int main(int argc, char *argv[])
         }
         printf("\n******************************************************\n");
 
-        /* Measure finish time */
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
     }
