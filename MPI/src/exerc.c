@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&aux[posicao(0, offset, v)], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&aux[offset], rows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
         }
 
         printf("******************************************************\n");
