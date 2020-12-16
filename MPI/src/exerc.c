@@ -4,10 +4,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define MATSIZE 10
-#define NRA 10   /* number of rows in matrix A */
-#define NCA 9   /* number of columns in matrix A */
-#define NCB 8   /* number of columns in matrix B */
 #define MASTER 0      /* rank of first task */
 #define FROM_MASTER 1 /* setting a message type */
 #define FROM_WORKER 2 /* setting a message type */
@@ -25,9 +21,9 @@ int main(int argc, char *argv[])
     int yAverow, yExtra, yOffset,
         wAverow, wExtra, wOffset,
         vAverow, vExtra, vOffset;
-    double a[NRA][NCA],
-        b[NCA][NCB],
-        c[NRA][NCB];
+    // double a[NRA][NCA],
+    //     b[NCA][NCB],
+    //     c[NRA][NCB];
     MPI_Status status;
 
     // Variáveis para receber valores do argv
@@ -42,6 +38,10 @@ int main(int argc, char *argv[])
     strcpy(arqB, argv[5]);
     strcpy(arqC, argv[6]);
     strcpy(arqD, argv[7]);
+
+    double a[y][w],
+        b[w][v],
+        c[y][v];
 
     // Criaçao e alocação das matrizes em uma etapa
     float *matrizA = (float *)malloc(y * w * sizeof(float));
@@ -78,19 +78,19 @@ int main(int argc, char *argv[])
     {
         printf("mpi_mm has started with %d tasks.\n", quantProcs);
         // printf("Initializing arrays...\n");
-        for (i = 0; i < NRA; i++)
-            for (j = 0; j < NCA; j++)
+        for (i = 0; i < y; i++)
+            for (j = 0; j < w; j++)
                 a[i][j] = i + j;
-        for (i = 0; i < NCA; i++)
-            for (j = 0; j < NCB; j++)
+        for (i = 0; i < w; i++)
+            for (j = 0; j < v; j++)
                 b[i][j] = i * j;
 
         /* Measure start time */
         double start = MPI_Wtime();
 
         /* Send matrix data to the worker tasks */
-        averow = NRA / numWorkers;
-        extra = NRA % numWorkers;
+        averow = y / numWorkers;
+        extra = y % numWorkers;
         offset = 0;
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
@@ -99,9 +99,9 @@ int main(int argc, char *argv[])
             // printf("Sending %d rows to task %d offset=%d\n",rows,dest,offset);
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&a[offset][0], rows * NCA, MPI_DOUBLE, dest, mtype,
+            MPI_Send(&a[offset][0], rows * w, MPI_DOUBLE, dest, mtype,
                      MPI_COMM_WORLD);
-            MPI_Send(&b, NCA * NCB, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&b, w * v, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
             offset = offset + rows;
         }
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&c[offset][0], rows * NCB, MPI_DOUBLE, fonte, mtype,
+            MPI_Recv(&c[offset][0], rows * v, MPI_DOUBLE, fonte, mtype,
                      MPI_COMM_WORLD, &status);
             // printf("Received results from task %d\n",fonte);
         }
@@ -121,10 +121,10 @@ int main(int argc, char *argv[])
 
         printf("******************************************************\n");
         printf("Result Matrix:\n");
-        for (i = 0; i < NRA; i++)
+        for (i = 0; i < y; i++)
         {
             printf("\n");
-            for (j = 0; j < NCB; j++)
+            for (j = 0; j < v; j++)
                 printf("%6.2f   ", c[i][j]);
         }
         printf("\n******************************************************\n");
@@ -140,20 +140,20 @@ int main(int argc, char *argv[])
         mtype = FROM_MASTER;
         MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(&a, rows * NCA, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(&b, NCA * NCB, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&a, rows * w, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&b, w * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        for (k = 0; k < NCB; k++)
+        for (k = 0; k < v; k++)
             for (i = 0; i < rows; i++)
             {
                 c[i][k] = 0.0;
-                for (j = 0; j < NCA; j++)
+                for (j = 0; j < w; j++)
                     c[i][k] = c[i][k] + a[i][j] * b[j][k];
             }
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        MPI_Send(&c, rows * NCB, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(&c, rows * v, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
     }
     MPI_Finalize();
 }
