@@ -71,6 +71,9 @@ int main(int argc, char *argv[])
         readMatrix(v, 1, matrizC, arqC);
         printf("Passou alocação.\n");
 
+        printMatrix(y, w, matrizA);
+
+
         double start = MPI_Wtime();
 
         averow = y / numWorkers;
@@ -121,7 +124,6 @@ int main(int argc, char *argv[])
         MPI_Recv(&matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        printMatrix(rows, w, matrizA);
 
         printf("Antes calculo.\n");
         for (k = 0; k < v; k++)
