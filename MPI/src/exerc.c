@@ -14,6 +14,10 @@
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);  //Função para preencher uma matriz com os dados recebidos de um arquivo.
 int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename); //Função para preencher um arquivo com os dados recebidos de uma matriz.
 
+int y;
+int w;
+int v;
+
 int main(int argc, char *argv[])
 {
     int numtasks,              /* number of tasks in partition */
