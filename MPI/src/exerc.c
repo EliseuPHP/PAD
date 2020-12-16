@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     int auxAverow, auxExtra, auxOffset, auxRows;
+    int aAverow, aExtra, aOffset, aRows;
     //     wAverow, wExtra, wOffset,
     //     vAverow, vExtra, vOffset;
     MPI_Status status;
@@ -78,31 +79,25 @@ int main(int argc, char *argv[])
         readMatrix(v, 1, matrizC, arqC);
         printf("Passou alocação.\n");
 
-        printMatrix(y, w, matrizA);
-
         double start = MPI_Wtime();
 
-        //a b sender
-
-        averow = y / numWorkers;
-        extra = y % numWorkers;
-        offset = 0;
+        // A B sender
+        aAverow = y / numWorkers;
+        aExtra = y % numWorkers;
+        aOffset = 0;
 
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
-            printf("Dentro for master sender %d.\n", dest);
-
-            rows = (dest <= extra) ? averow + 1 : averow;
-            // MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&matrizA[offset], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+            aRows = (dest <= aExtra) ? aAverow + 1 : aAverow;
+            MPI_Send(&aRows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&matrizA[aOffset], aRows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(matrizB, w * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
-            // offset = offset + rows;
-            offset = offset + rows * w;
+
+            aOffset = aOffset + aRows * w;
         }
 
-        //aux receiver
+        // aux receiver
         auxAverow = y / numWorkers;
         auxExtra = y % numWorkers;
         auxOffset = 0;
@@ -111,14 +106,25 @@ int main(int argc, char *argv[])
         for (i = 1; i <= numWorkers; i++)
         {
             auxRows = (i <= auxExtra) ? auxAverow + 1 : auxAverow;
-            printf("Dentro for master receiver %d.\n", i);
             fonte = i;
-            // MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
-            // MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&aux[auxOffset], auxRows * v, MPI_FLOAT, fonte, mtype, MPI_COMM_WORLD, &status);
 
             auxOffset = auxOffset + auxRows * v;
         }
+
+        // // aux C sender
+        // auxOffset = 0;
+
+        // mtype = FROM_MASTER;
+        // for (dest = 1; dest <= numWorkers; dest++)
+        // {
+        //     auxRows = (i <= auxExtra) ? auxAverow + 1 : auxAverow;
+        //     MPI_Send(&auxRows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+        //     MPI_Send(&aux[auxOffset], auxRows * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+        //     MPI_Send(matrizC, v * 1, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+
+        //     auxOffset = auxOffset + auxRows * v;
+        // }
 
         printf("******************************************************\n");
         printMatrix(y, v, aux);
@@ -131,9 +137,6 @@ int main(int argc, char *argv[])
     /**************************** worker task ************************************/
     if (rank > MASTER)
     {
-
-        printf("Dentro worker %d.\n", rank);
-
         // Alocação das matrizes em uma etapa
         matrizA = (float *)malloc(y * w * sizeof(float));
         matrizB = (float *)malloc(w * v * sizeof(float));
@@ -141,16 +144,15 @@ int main(int argc, char *argv[])
         matrizD = (float *)malloc(y * 1 * sizeof(float));
         aux = (float *)malloc(y * v * sizeof(float));
 
+        // A * B = aux
         mtype = FROM_MASTER;
-        // MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-        MPI_Recv(matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&aRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(matrizA, aRows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        printf("Antes calculo.\n");
         for (k = 0; k < v; k++)
         {
-            for (i = 0; i < rows; i++)
+            for (i = 0; i < aRows; i++)
             {
                 aux[posicao(i, k, v)] = 0.0;
                 for (j = 0; j < w; j++)
@@ -159,12 +161,11 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        printf("Depois calculo.\n");
-        printMatrix(rows, v, aux);
+        // send aux to master
         mtype = FROM_WORKER;
-        // MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        // MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        MPI_Send(aux, rows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(aux, aRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
+
+        // aux * C = D
     }
     MPI_Finalize();
 }
