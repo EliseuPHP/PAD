@@ -128,13 +128,13 @@ int main(int argc, char *argv[])
             for (i = 0; i < rows; i++)
             {
                 aux[posicao(k, i, v)] = 2.0;
-                printf("%f\n", aux[posicao(k, i, v)]);
+                // printf("%f\n", aux[posicao(k, i, v)]);
                 // for (j = 0; j < w; j++)
                 //     c[i][k] = c[i][k] + a[i][j] * b[j][k];
             }
         }
         printf("Depois calculo.\n");
-
+        printMatrix(rows, v, aux);
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
