@@ -122,6 +122,8 @@ int main(int argc, char *argv[])
         MPI_Recv(&matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
+        printMatrix(rows, w, matrizA);
+
         printf("Antes calculo.\n");
         for (k = 0; k < v; k++)
         {
@@ -130,12 +132,12 @@ int main(int argc, char *argv[])
                 aux[posicao(i, k, v)] = rank;
                 for (j = 0; j < w; j++)
                 {
-                    aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
+                    // aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
                 }
             }
         }
         printf("Depois calculo.\n");
-        printMatrix(rows, v, aux);
+        // printMatrix(rows, v, aux);
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
