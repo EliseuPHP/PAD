@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         mtype,                 /* message type */
         rows,                  /* rows of matrix A sent to each worker */
         averow, extra, offset, /* used to determine rows sent to each worker */
-        i, j, k, rc;           /* misc */
+        rc;                    /* misc */
     double a[NRA][NCA],        /* matrix A to be multiplied */
         b[NCA][NCB],           /* matrix B to be multiplied */
         c[NRA][NCB];           /* result matrix C */
@@ -54,6 +54,13 @@ int main(int argc, char *argv[])
     readMatrix(y, w, matrizA, arqA);
     readMatrix(w, v, matrizB, arqB);
     readMatrix(v, 1, matrizC, arqC);
+
+    // Declaração de variáveis que serão usadas para a multiplicação e redução
+    int i;
+    int j;
+    int k;
+
+    double soma = 0.0;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
