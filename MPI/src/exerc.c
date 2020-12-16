@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-        MPI_Send(&aux, rows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(aux, rows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
     }
     MPI_Finalize();
 }
