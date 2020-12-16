@@ -128,17 +128,16 @@ int main(int argc, char *argv[])
         MPI_Recv(&matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
         printf("Antes calculo.\n");
-        // for (i = 0; i < rows; i++)
-        // {
-        //     for (j = 0; j < v; j++)
-        //     {
-        //         aux[i * v + j] = 0.0;
-        //         for (k = 0; k < w; k++)
-        //         {
-        //             aux[i * v + j] = aux[i * v + j] + matrizA[i * w + k] * matrizB[k * v + j];
-        //         }
-        //     }
-        // }
+        for (k = 0; k < v; k++)
+        {
+            for (i = 0; i < rows; i++)
+            {
+                aux[i * v + k] = 2.0;
+
+                // for (j = 0; j < w; j++)
+                //     c[i][k] = c[i][k] + a[i][j] * b[j][k];
+            }
+        }
         printf("Depois calculo.\n");
 
         mtype = FROM_WORKER;
