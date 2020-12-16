@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
             rows = (dest <= extra) ? averow + 1 : averow;
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            MPI_Send(&matrizA[offset][0], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&matrizA[offset], rows * w, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&matrizB, w * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             offset = offset + rows;
         }
