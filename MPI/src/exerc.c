@@ -5,9 +5,9 @@
 #include <sys/time.h>
 
 #define MATSIZE 10
-#define NRA MATSIZE   /* number of rows in matrix A */
-#define NCA MATSIZE   /* number of columns in matrix A */
-#define NCB MATSIZE   /* number of columns in matrix B */
+#define NRA 10   /* number of rows in matrix A */
+#define NCA 9   /* number of columns in matrix A */
+#define NCB 8   /* number of columns in matrix B */
 #define MASTER 0      /* rank of first task */
 #define FROM_MASTER 1 /* setting a message type */
 #define FROM_WORKER 2 /* setting a message type */
