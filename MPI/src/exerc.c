@@ -121,10 +121,6 @@ int main(int argc, char *argv[])
         MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
-        if (rank == 2)
-        {
-            printMatrix(w, v, matrizB);
-        }
 
         printf("Antes calculo.\n");
         for (k = 0; k < v; k++)
@@ -132,9 +128,10 @@ int main(int argc, char *argv[])
             for (i = 0; i < rows; i++)
             {
                 aux[posicao(i, k, v)] = rank;
-                // printf("%f\n", aux[posicao(k, i, v)]);
-                // for (j = 0; j < w; j++)
-                //     c[i][k] = c[i][k] + a[i][j] * b[j][k];
+                for (j = 0; j < w; j++)
+                {
+                    aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
+                }
             }
         }
         printf("Depois calculo.\n");
