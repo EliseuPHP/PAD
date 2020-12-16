@@ -1,0 +1,1 @@
+mpirun --hostfile ../hosts -np 2 ./programa.o
