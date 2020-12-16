@@ -68,15 +68,20 @@ int main(int argc, char *argv[])
         readMatrix(y, w, matrizA, arqA);
         readMatrix(w, v, matrizB, arqB);
         readMatrix(v, 1, matrizC, arqC);
+        printf("Passou alocação.\n");
 
         double start = MPI_Wtime();
 
         averow = y / numWorkers;
         extra = y % numWorkers;
         offset = 0;
+        printf("Passou calculos.\n");
+
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
+            printf("Dentro for master %d.\n", dest);
+
             rows = (dest <= extra) ? averow + 1 : averow;
             MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
@@ -89,6 +94,7 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
         {
+            printf("Dentro for master %d.\n", i);
             fonte = i;
             MPI_Recv(&offset, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rows, 1, MPI_INT, fonte, mtype, MPI_COMM_WORLD, &status);
@@ -113,12 +119,15 @@ int main(int argc, char *argv[])
     /**************************** worker task ************************************/
     if (rank > MASTER)
     {
+        printf("Dentro worker %d.\n", rank);
+
         mtype = FROM_MASTER;
         MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizA, rows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(&matrizB, w * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
+        printf("Antes calculo.\n");
         for (i = 0; i < rows; i++)
         {
             for (j = 0; j < v; j++)
@@ -130,6 +139,8 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        printf("Depois calculo.\n");
+
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
