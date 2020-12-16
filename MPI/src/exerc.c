@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
             }
         }
         printf("Depois calculo.\n");
-        printMatrix(v, rows, aux);
+        printMatrix(rows, v, aux);
         mtype = FROM_WORKER;
         MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
