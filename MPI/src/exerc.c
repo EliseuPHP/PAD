@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
                 aux[posicao(i, k, v)] = rank;
                 for (j = 0; j < w; j++)
                 {
-                    // aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
+                    aux[i * v + k] = aux[i * v + k] + matrizA[i * w + j] * matrizB[j * v + k];
                 }
             }
         }
