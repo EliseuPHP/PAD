@@ -164,8 +164,6 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
-        free(matrizD);
-
         // Reduc
         somaT = 0.0;
         mtype = FROM_WORKER;
@@ -180,6 +178,7 @@ int main(int argc, char *argv[])
         printf("Done in %f seconds.\n", finish - start);
 
         writeMatrix(y, 1, matrizD, arqD);
+        free(matrizD);
 
         printf("%.2f\n", somaT);
     }
