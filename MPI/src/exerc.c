@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         }
 
         printf("******************************************************\n");
-        printMatrix(y, 1, matrizD);
+        printMatrix(y, v, aux);
         printf("******************************************************\n");
 
         double finish = MPI_Wtime();
