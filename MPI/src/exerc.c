@@ -62,8 +62,6 @@ int main(int argc, char *argv[])
 
     numWorkers = quantProcs - 1;
 
-    MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
-
     /**************************** master task ************************************/
     if (rank == MASTER)
     {
@@ -153,6 +151,8 @@ int main(int argc, char *argv[])
         printf("Done in %f seconds.\n", finish - start);
 
         writeMatrix(y, 1, matrizD, arqD);
+
+        MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
 
         printf("%.2f\n", soma);
     }
