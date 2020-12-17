@@ -244,10 +244,11 @@ int main(int argc, char *argv[])
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
 
         // reduc D
+        mtype = FROM_MASTER;
         MPI_Recv(&dRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizD, dRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        printf("Antes Loop %d\n", dRows);
+        // printf("Antes Loop %d\n", dRows);
 
         for (i = 0; i < dRows; i++)
         {
@@ -257,7 +258,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        printf("Terminou Loop\n");
+        // printf("Terminou Loop\n");
 
         // send D to master
         mtype = FROM_WORKER;
