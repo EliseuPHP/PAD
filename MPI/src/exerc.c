@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
         readMatrix(w, v, matrizB, arqB);
         readMatrix(v, 1, matrizC, arqC);
 
-        double startMpi = MPI_Wtime();
-
         // Variáveis para o controle de tempo
         double time_spent = 0.0;
 
@@ -191,9 +189,6 @@ int main(int argc, char *argv[])
 
         // Printa o tempo de execução da regiao paralela
         printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
-
-        double finish = MPI_Wtime();
-        printf("Done in %f seconds.\n", finish - startMpi);
 
         writeMatrix(y, 1, matrizD, arqD);
         free(matrizD);
