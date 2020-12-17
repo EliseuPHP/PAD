@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
         }
 
         printf("******************************************************\n");
-        printMatrix(y, v, aux);
+        printMatrix(y, 1, matrizD);
         printf("******************************************************\n");
 
         double finish = MPI_Wtime();
@@ -189,7 +189,6 @@ int main(int argc, char *argv[])
         MPI_Recv(aux, auxRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizC, v * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        printf("aux rows %d\n\n", auxRows);
 
         for (k = 0; k < 1; k++)
         {
@@ -198,7 +197,6 @@ int main(int argc, char *argv[])
                 matrizD[posicao(i, k, 1)] = 5.0;
                 for (j = 0; j < v; j++)
                 {
-                    printf("%.2f\n", aux[i * v + j]);
                     matrizD[i * 1 + k] = matrizD[i * 1 + k] + aux[i * v + j] * matrizC[j * 1 + k];
                 }
             }
