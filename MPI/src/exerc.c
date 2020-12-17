@@ -143,9 +143,9 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
-        printf("******************************************************\n");
-        printMatrix(y, 1, matrizD);
-        printf("******************************************************\n");
+        // printf("******************************************************\n");
+        // printMatrix(y, 1, matrizD);
+        // printf("******************************************************\n");
 
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
@@ -207,6 +207,11 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
     }
+
+    MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
+
+    printf("%.2f\n", soma);
+
     MPI_Finalize();
 }
 
