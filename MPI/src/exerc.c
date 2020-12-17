@@ -20,17 +20,18 @@ int v;
 
 int main(int argc, char *argv[])
 {
-    int quantProcs, rank, numWorkers, fonte, dest, mtype, rows, averow, extra, offset, rc;
+    MPI_Init(&argc, &argv); // Inicializar MPI
 
-    MPI_Init(&argc, &argv);
+    int quantProcs, rank, numWorkers, fonte, dest, mtype, rc;
+
     MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // Variáveis de controle de envio e recebimento de matrizez
     int auxAverow, auxExtra, auxOffset, auxRows;
     int aAverow, aExtra, aOffset, aRows;
     int dAverow, dExtra, dOffset, dRows;
-    //     wAverow, wExtra, wOffset,
-    //     vAverow, vExtra, vOffset;
+
     MPI_Status status;
 
     // Variáveis para receber valores do argv
@@ -60,15 +61,12 @@ int main(int argc, char *argv[])
 
     double soma = 0.0;
     double somaT = 0.0;
-    double reduc[quantProcs];
 
     numWorkers = quantProcs - 1;
 
     /**************************** master task ************************************/
     if (rank == MASTER)
     {
-        printf("mpi_mm has started with %d tasks.\n", quantProcs);
-
         // Criaçao e alocação das matrizes em uma etapa
         matrizA = (float *)malloc(y * w * sizeof(float));
         matrizB = (float *)malloc(w * v * sizeof(float));
@@ -98,6 +96,9 @@ int main(int argc, char *argv[])
 
             aOffset = aOffset + aRows * w;
         }
+
+        free(matrizA);
+        free(matrizB);
 
         // aux receiver
         auxAverow = y / numWorkers;
@@ -130,6 +131,9 @@ int main(int argc, char *argv[])
             auxOffset = auxOffset + auxRows * v;
         }
 
+        free(matrizC);
+        free(aux);
+
         // D receiver
         dAverow = y / numWorkers;
         dExtra = y % numWorkers;
@@ -144,8 +148,6 @@ int main(int argc, char *argv[])
 
             dOffset = dOffset + dRows * 1;
         }
-
-        printf("passou todas multiplicacoes\n");
 
         // D sender
         dAverow = y / numWorkers;
@@ -162,7 +164,7 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
-        printf("Enviou MatrizD\n");
+        free(matrizD);
 
         // Reduc
         somaT = 0.0;
@@ -174,17 +176,10 @@ int main(int argc, char *argv[])
             somaT += soma;
         }
 
-        printf("Recebeu soma\n");
-        // printf("******************************************************\n");
-        // printMatrix(y, 1, matrizD);
-        // printf("******************************************************\n");
-
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
 
         writeMatrix(y, 1, matrizD, arqD);
-
-        // MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
 
         printf("%.2f\n", somaT);
     }
@@ -221,6 +216,9 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(aux, aRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
 
+        free(matrizA);
+        free(matrizB);
+
         // aux * C = D
         mtype = FROM_MASTER;
         MPI_Recv(&auxRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
@@ -243,12 +241,13 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
 
+        free(matrizC);
+        free(aux);
+
         // reduc D
         mtype = FROM_MASTER;
         MPI_Recv(&dRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizD, dRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
-
-        // printf("Antes Loop %d\n", dRows);
 
         for (i = 0; i < dRows; i++)
         {
@@ -258,14 +257,15 @@ int main(int argc, char *argv[])
             }
         }
 
-        // printf("Terminou Loop\n");
-
         // send D to master
         mtype = FROM_WORKER;
         MPI_Send(&soma, 1, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
+
+        free(matrizD);
     }
 
     MPI_Finalize();
+    return 0;
 }
 
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename)
@@ -306,20 +306,5 @@ int writeMatrix(unsigned int rows, unsigned int cols, float *a, const char *file
         }
     }
     fclose(pf);
-    return 1;
-}
-
-int printMatrix(int rows, int cols, float *a)
-{
-    register unsigned int i, j;
-
-    for (i = 0; i < rows; i++)
-    {
-        for (j = 0; j < cols; j++)
-        {
-            printf("%.2f\t", a[i * cols + j]);
-        }
-        printf("\n");
-    }
     return 1;
 }
