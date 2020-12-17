@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
 
     numWorkers = quantProcs - 1;
 
+    MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
+
     /**************************** master task ************************************/
     if (rank == MASTER)
     {
@@ -151,6 +153,8 @@ int main(int argc, char *argv[])
         printf("Done in %f seconds.\n", finish - start);
 
         writeMatrix(y, 1, matrizD, arqD);
+
+        printf("%.2f\n", soma);
     }
 
     /**************************** worker task ************************************/
@@ -207,10 +211,6 @@ int main(int argc, char *argv[])
         mtype = FROM_WORKER;
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
     }
-
-    MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
-
-    printf("%.2f\n", soma);
 
     MPI_Finalize();
 }
