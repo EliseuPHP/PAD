@@ -255,6 +255,8 @@ int main(int argc, char *argv[])
             }
         }
 
+        printf("Terminou Loop\n");
+
         // send D to master
         mtype = FROM_WORKER;
         MPI_Send(&soma, 1, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
