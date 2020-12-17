@@ -192,10 +192,11 @@ int main(int argc, char *argv[])
             for (i = 0; i < auxRows; i++)
             {
                 matrizD[posicao(i, k, 1)] = 5.0;
-                // for (j = 0; j < v; j++)
-                // {
-                //     matrizD[i * 1 + k] = matrizD[i * 1 + k] + aux[i * v + j] * matrizC[j * 1 + k];
-                // }
+                for (j = 0; j < v; j++)
+                {
+                    printf("%.2f", aux[i * v + j]);
+                    matrizD[i * 1 + k] = matrizD[i * 1 + k] + aux[i * v + j] * matrizC[j * 1 + k];
+                }
             }
         }
 
