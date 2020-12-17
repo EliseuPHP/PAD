@@ -247,6 +247,8 @@ int main(int argc, char *argv[])
         MPI_Recv(&dRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizD, dRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
+        printf("Antes Loop %d\n", dRows);
+
         for (i = 0; i < dRows; i++)
         {
             for (j = 0; j < 1; j++)
