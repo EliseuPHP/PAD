@@ -187,8 +187,7 @@ int main(int argc, char *argv[])
         MPI_Recv(aux, auxRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizC, v * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
 
-        printMatrix(v, 1, matrizC);
-        printf("%d", auxRows);
+        printf("aux rows %d\n\n", auxRows);
 
         for (k = 0; k < 1; k++)
         {
