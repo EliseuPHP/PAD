@@ -149,6 +149,8 @@ int main(int argc, char *argv[])
 
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
+
+        writeMatrix(y, 1, matrizD);
     }
 
     /**************************** worker task ************************************/
@@ -188,7 +190,6 @@ int main(int argc, char *argv[])
         MPI_Recv(&auxRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(aux, auxRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizC, v * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
-
 
         for (k = 0; k < 1; k++)
         {
