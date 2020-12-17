@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     strcpy(arqC, argv[6]);
     strcpy(arqD, argv[7]);
 
-    // Criaçao e alocação das matrizes em uma etapa
+    // Criaçao // e alocação // das matrizes // em uma etapa
     float *matrizA; // = (float *)malloc(y * w * sizeof(float));
     float *matrizB; // = (float *)malloc(w * v * sizeof(float));
     float *matrizC; // = (float *)malloc(v * 1 * sizeof(float));
@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
     int k;
 
     double soma = 0.0;
+    double somaT = 0.0;
+    double reduc[quantProcs];
 
     numWorkers = quantProcs - 1;
 
@@ -143,6 +145,29 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
+        // D sender
+        dAverow = y / numWorkers;
+        dExtra = y % numWorkers;
+        dOffset = 0;
+
+        mtype = FROM_MASTER;
+        for (dest = 1; dest <= numWorkers; dest++)
+        {
+            dRows = (dest <= dExtra) ? dAverow + 1 : dAverow;
+            MPI_Send(&dRows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&matrizD[dOffset], dRows * 1, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
+
+            dOffset = dOffset + dRows * 1;
+        }
+
+        // Reduc
+        mtype = FROM_WORKER;
+        for (i = 1; i <= numWorkers; i++)
+        {
+            fonte = i;
+            MPI_Recv(&soma, 1, MPI_DOUBLE, fonte, mtype, MPI_COMM_WORLD, &status);
+            somaT += soma;
+        }
         // printf("******************************************************\n");
         // printMatrix(y, 1, matrizD);
         // printf("******************************************************\n");
@@ -154,7 +179,7 @@ int main(int argc, char *argv[])
 
         // MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
 
-        // printf("%.2f\n", soma);
+        printf("%.2f\n", somaT);
     }
 
     /**************************** worker task ************************************/
@@ -210,6 +235,22 @@ int main(int argc, char *argv[])
         // send D to master
         mtype = FROM_WORKER;
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
+
+        // reduc D
+        MPI_Recv(&dRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(matrizD, dRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
+
+        for (i = 0; i < dRows; i++)
+        {
+            for (j = 0; j < 1; j++)
+            {
+                soma += matrizD[i * 1 + j];
+            }
+        }
+
+        // send D to master
+        mtype = FROM_WORKER;
+        MPI_Send(&soma, 1, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
