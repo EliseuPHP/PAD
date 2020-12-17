@@ -145,6 +145,8 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
+        printf("passou todas multiplicacoes\n");
+
         // D sender
         dAverow = y / numWorkers;
         dExtra = y % numWorkers;
