@@ -113,12 +113,14 @@ int main(int argc, char *argv[])
         }
 
         // aux C sender
+        auxAverow = y / numWorkers;
+        auxExtra = y % numWorkers;
         auxOffset = 0;
 
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
-            auxRows = (i <= auxExtra) ? auxAverow + 1 : auxAverow;
+            auxRows = (dest <= auxExtra) ? auxAverow + 1 : auxAverow;
             MPI_Send(&auxRows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(&aux[auxOffset], auxRows * v, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
             MPI_Send(matrizC, v * 1, MPI_FLOAT, dest, mtype, MPI_COMM_WORLD);
