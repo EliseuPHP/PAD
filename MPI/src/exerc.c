@@ -152,9 +152,9 @@ int main(int argc, char *argv[])
 
         writeMatrix(y, 1, matrizD, arqD);
 
-        MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
+        // MPI_Reduce(matrizD, &soma, 1, MPI_FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
 
-        printf("%.2f\n", soma);
+        // printf("%.2f\n", soma);
     }
 
     /**************************** worker task ************************************/
