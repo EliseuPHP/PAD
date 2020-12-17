@@ -81,6 +81,14 @@ int main(int argc, char *argv[])
 
         double start = MPI_Wtime();
 
+        // Variáveis para o controle de tempo
+        double time_spent = 0.0;
+
+        struct timeval start, end;
+
+        // Inicia a contagem de tempo da região paralela
+        gettimeofday(&start, NULL);
+
         // A B sender
         aAverow = y / numWorkers;
         aExtra = y % numWorkers;
@@ -173,6 +181,16 @@ int main(int argc, char *argv[])
             MPI_Recv(&soma, 1, MPI_DOUBLE, fonte, mtype, MPI_COMM_WORLD, &status);
             somaT += soma;
         }
+
+        //  Fim da contagem do tempo
+        gettimeofday(&end, NULL);
+
+        // Cálculo do tempo de execução
+        long seconds = (end.tv_sec - start.tv_sec);
+        long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+        // Printa o tempo de execução da regiao paralela
+        printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
