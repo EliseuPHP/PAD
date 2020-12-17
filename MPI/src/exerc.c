@@ -162,7 +162,10 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
+        printf("Enviou MatrizD\n");
+
         // Reduc
+        somaT = 0.0;
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
         {
@@ -170,6 +173,8 @@ int main(int argc, char *argv[])
             MPI_Recv(&soma, 1, MPI_DOUBLE, fonte, mtype, MPI_COMM_WORLD, &status);
             somaT += soma;
         }
+
+        printf("Recebeu soma\n");
         // printf("******************************************************\n");
         // printMatrix(y, 1, matrizD);
         // printf("******************************************************\n");
