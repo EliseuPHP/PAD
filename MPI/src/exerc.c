@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
         double finish = MPI_Wtime();
         printf("Done in %f seconds.\n", finish - start);
 
-        writeMatrix(y, 1, matrizD);
+        writeMatrix(y, 1, matrizD, arqD);
     }
 
     /**************************** worker task ************************************/
