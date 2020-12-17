@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         readMatrix(w, v, matrizB, arqB);
         readMatrix(v, 1, matrizC, arqC);
 
-        double start = MPI_Wtime();
+        double startMpi = MPI_Wtime();
 
         // Variáveis para o controle de tempo
         double time_spent = 0.0;
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
         printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
         double finish = MPI_Wtime();
-        printf("Done in %f seconds.\n", finish - start);
+        printf("Done in %f seconds.\n", finish - startMpi);
 
         writeMatrix(y, 1, matrizD, arqD);
         free(matrizD);
