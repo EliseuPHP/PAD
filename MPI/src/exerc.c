@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define MASTER 0      /* rank of first task */
-#define FROM_MASTER 1 /* setting a message type */
-#define FROM_WORKER 2 /* setting a message type */
+#define MASTER 0      // Rank do master
+#define FROM_MASTER 1 // Mensagem de envio do master para o worker
+#define FROM_WORKER 2 // Mensagem de envio do worker para o master
 
-#define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J))
+#define posicao(I, J, COLUNAS) ((I) * (COLUNAS) + (J)) // Cálculo de posição para matrizes alocadas em uma etapa
 
 int printMatrix(int rows, int cols, float *a);
 int readMatrix(unsigned int rows, unsigned int cols, float *a, const char *filename);  //Função para preencher uma matriz com os dados recebidos de um arquivo.
@@ -22,17 +22,18 @@ int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv); // Inicializar MPI
 
+    // Variáveis de controle do MPI
     int quantProcs, rank, numWorkers, fonte, dest, mtype, rc;
 
     MPI_Comm_size(MPI_COMM_WORLD, &quantProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    MPI_Status status;
+
     // Variáveis de controle de envio e recebimento de matrizez
     int auxAverow, auxExtra, auxOffset, auxRows;
     int aAverow, aExtra, aOffset, aRows;
     int dAverow, dExtra, dOffset, dRows;
-
-    MPI_Status status;
 
     // Variáveis para receber valores do argv
     y = atoi(argv[1]);
@@ -47,12 +48,12 @@ int main(int argc, char *argv[])
     strcpy(arqC, argv[6]);
     strcpy(arqD, argv[7]);
 
-    // Criaçao // e alocação // das matrizes // em uma etapa
-    float *matrizA; // = (float *)malloc(y * w * sizeof(float));
-    float *matrizB; // = (float *)malloc(w * v * sizeof(float));
-    float *matrizC; // = (float *)malloc(v * 1 * sizeof(float));
-    float *matrizD; // = (float *)malloc(y * 1 * sizeof(float));
-    float *aux;     // = (float *)malloc(y * v * sizeof(float));
+    // Criação das matrizes
+    float *matrizA;
+    float *matrizB;
+    float *matrizC;
+    float *matrizD;
+    float *aux;
 
     // Declaração de variáveis que serão usadas para a multiplicação e redução
     int i;
@@ -87,11 +88,12 @@ int main(int argc, char *argv[])
         // Inicia a contagem de tempo da região paralela
         gettimeofday(&start, NULL);
 
-        // A B sender
+        // Cálculo para dividir a matrizA entre os Workers
         aAverow = y / numWorkers;
         aExtra = y % numWorkers;
         aOffset = 0;
 
+        // Área de envio das Matrizes A e B para serem multiplicadas pelos Workers
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
@@ -103,14 +105,16 @@ int main(int argc, char *argv[])
             aOffset = aOffset + aRows * w;
         }
 
+        // Desaloca matrizes já utilizadas
         free(matrizA);
         free(matrizB);
 
-        // aux receiver
+        // Cálculo para receber a matriz aux dos Workers
         auxAverow = y / numWorkers;
         auxExtra = y % numWorkers;
         auxOffset = 0;
 
+        // Área de recebimento da matriz aux
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
         {
@@ -121,11 +125,12 @@ int main(int argc, char *argv[])
             auxOffset = auxOffset + auxRows * v;
         }
 
-        // aux C sender
+        // Cálculo para dividir a matriz aux entre os Workers
         auxAverow = y / numWorkers;
         auxExtra = y % numWorkers;
         auxOffset = 0;
 
+        // Área de envio das Matrizes aux e C para serem multiplicadas pelos Workers
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
@@ -137,14 +142,16 @@ int main(int argc, char *argv[])
             auxOffset = auxOffset + auxRows * v;
         }
 
+        // Desaloca matrizes já utilizadas
         free(matrizC);
         free(aux);
 
-        // D receiver
+        // Cálculo para receber a matrizD dos Workers
         dAverow = y / numWorkers;
         dExtra = y % numWorkers;
         dOffset = 0;
 
+        // Área de recebimento da matrizD
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
         {
@@ -155,11 +162,12 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
-        // D sender
+        // Cálculo para dividir a matriz aux entre os Workers
         dAverow = y / numWorkers;
         dExtra = y % numWorkers;
         dOffset = 0;
 
+        // Área de envio da Matriz D para que seja feito a redução por soma pelos Workers
         mtype = FROM_MASTER;
         for (dest = 1; dest <= numWorkers; dest++)
         {
@@ -170,7 +178,7 @@ int main(int argc, char *argv[])
             dOffset = dOffset + dRows * 1;
         }
 
-        // Reduc
+        // Área de recebimento dos valores parciais da redução por soma para que seja feita uma soma total
         somaT = 0.0;
         mtype = FROM_WORKER;
         for (i = 1; i <= numWorkers; i++)
@@ -190,9 +198,13 @@ int main(int argc, char *argv[])
         // Printa o tempo de execução da regiao paralela
         printf("Time elpased is %d seconds and %d micros\n", seconds, micros);
 
+        // Escreve matriz D no arquivo
         writeMatrix(y, 1, matrizD, arqD);
+
+        // Desaloca matrize já utilizada
         free(matrizD);
 
+        // Printa o resultado da redução da matriz D
         printf("%.2f\n", somaT);
     }
 
@@ -206,7 +218,7 @@ int main(int argc, char *argv[])
         matrizD = (float *)malloc(y * 1 * sizeof(float));
         aux = (float *)malloc(y * v * sizeof(float));
 
-        // A * B = aux
+        // Área de recebimento das matrizes A e B para que seja realizada a multiplicação que resultará na matriz aux
         mtype = FROM_MASTER;
         MPI_Recv(&aRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizA, aRows * w, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
@@ -224,14 +236,15 @@ int main(int argc, char *argv[])
             }
         }
 
-        // send aux to master
+        // Área de envio da matriz resultante da multiplicação de volta para a master task
         mtype = FROM_WORKER;
         MPI_Send(aux, aRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
 
+        // Desaloca matrizes já utilizadas
         free(matrizA);
         free(matrizB);
 
-        // aux * C = D
+        // Área de recebimento das matrizes aux e C para que seja realizada a multiplicação que resultará na matriz D
         mtype = FROM_MASTER;
         MPI_Recv(&auxRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(aux, auxRows * v, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
@@ -249,14 +262,15 @@ int main(int argc, char *argv[])
             }
         }
 
-        // send D to master
+        // Área de envio da matriz resultante da multiplicação de volta para a master task
         mtype = FROM_WORKER;
         MPI_Send(matrizD, aRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD);
 
+        // Desaloca matrizes já utilizadas
         free(matrizC);
         free(aux);
 
-        // reduc D
+        // Área de recebimento da matrize D para que seja realizada a operação de redução por soma
         mtype = FROM_MASTER;
         MPI_Recv(&dRows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Recv(matrizD, dRows * 1, MPI_FLOAT, MASTER, mtype, MPI_COMM_WORLD, &status);
@@ -269,10 +283,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        // send D to master
+        // Área de envio do valor parcial da redução por soma de volta para a master task
         mtype = FROM_WORKER;
         MPI_Send(&soma, 1, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
 
+        // Desaloca a matriz já utilizada
         free(matrizD);
     }
 
