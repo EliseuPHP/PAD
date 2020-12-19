@@ -1,4 +1,4 @@
-# Relatório do Laboratório 2
+# Relatório do Laboratório 3
  ### Grupo: The Last Dance (The Man, The Myth, The Beast)
  
  ![alt text]( https://i.imgur.com/pDFm0Mr.png "The Man, The Myth, The Beast")
