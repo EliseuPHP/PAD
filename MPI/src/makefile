@@ -24,7 +24,7 @@ EXECUTAVEL=programa
 all: $(EXECUTAVEL)
 
 programa: ${FONTES}
-	$(CC) $(FONTES) -o $(DIRETORIOPROGRAMA)/programa.o
+	$(CC) $(FONTES) -o $(DIRETORIOPROGRAMA)/programa
 
 #Limpeza
 clean:
