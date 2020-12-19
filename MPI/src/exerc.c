@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
         free(matrizD);
 
         // Printa o resultado da redução da matriz D
-        printf("%.2f\n", somaT);
+        // printf("%.2f\n", somaT);
     }
 
     /**************************** worker task ************************************/
